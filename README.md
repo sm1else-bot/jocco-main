@@ -8,6 +8,9 @@ A detailed history of the development of the Jocco project management tool.
 
 This version introduced a powerful theme engine, allowing for a complete visual overhaul of the application and adding a new level of personalization.
 
+#### **v0.5.2**
+* **Feature:** A little easter egg :) find out.
+
 #### **v0.5.1 (Latest)**
 * **Feature:** Added a new **"Bento"** theme, featuring a high-contrast, neo-brutalist design with sharp corners and solid borders.
 * **Feature:** Added the ability to **delete columns**. A confirmation modal appears if the column contains tickets, preventing accidental data loss.
