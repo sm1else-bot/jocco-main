@@ -4,6 +4,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken }
 import { getFirestore, collection, doc, addDoc, setDoc, onSnapshot, query, deleteDoc, writeBatch, getDocs, where, serverTimestamp, Timestamp, updateDoc, arrayUnion, runTransaction } from 'firebase/firestore';
 
 // --- Helper Functions & Configuration ---
+// Safely parse Firebase config and set a default app ID
 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "your-api-key", authDomain: "your-auth-domain", projectId: "your-project-id" };
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-jocco-clone';
 
@@ -13,16 +14,17 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // --- Color Palettes & Generators ---
-const PASTEL_BG_COLORS =     ['#FFF9C4', '#F8BBD0', '#D1C4E9', '#C8E6C9', '#B3E5FC', '#FFCCBC'];
+const PASTEL_BG_COLORS = ['#FFF9C4', '#F8BBD0', '#D1C4E9', '#C8E6C9', '#B3E5FC', '#FFCCBC'];
 const DARK_PASTEL_BG_COLORS = ['#5C5B3A', '#6E3F51', '#4F4963', '#425C44', '#3A5B6B', '#6E4D43'];
 
+// Generates a random vibrant HSL color for ticket accents
 const generateRandomVibrantColor = () => {
   const hue = Math.floor(Math.random() * 360);
   return `hsl(${hue}, 80%, 60%)`;
 };
 
-
 // --- Google Font Loader ---
+// Dynamically loads Google Fonts to avoid cluttering the HTML head
 const loadGoogleFonts = () => {
     const fontFamilies = 'Bitcount+Prop+Double:wght@400;700&family=Roboto:wght@400;500;700';
     if (!document.querySelector(`link[href*="Bitcount"]`)) {
@@ -34,6 +36,7 @@ const loadGoogleFonts = () => {
 };
 
 // --- SVG Icons ---
+// A collection of SVG icons used throughout the application for a consistent look and feel.
 const PlusIcon = ({ className = "h-5 w-5" }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>);
 const TrashIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /></svg>);
 const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 2a1 1 0 011 1v1.158a3.985 3.985 0 013.707 4.565l.5 1.5a.5.5 0 00.94-.31l.5-1.5a3.985 3.985 0 013.707-4.565V3a1 1 0 112 0v1.158a5.985 5.985 0 01-5.56 6.818l-.5 1.5a.5.5 0 00.94.31l.5-1.5a5.985 5.985 0 015.56-6.818V3a1 1 0 112 0v1.158a3.985 3.985 0 013.707 4.565l.5 1.5a.5.5 0 00.94-.31l.5-1.5a3.985 3.985 0 013.707-4.565V3a1 1 0 112 0v1.158a5.985 5.985 0 01-5.56 6.818l-.5 1.5a.5.5 0 00.94.31l.5-1.5a5.985 5.985 0 015.56-6.818zM5 2a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" /></svg>);
@@ -46,6 +49,26 @@ const SearchIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5
 
 // --- Components ---
 
+/**
+ * A fun easter egg modal.
+ */
+const EasterEggModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4 cursor-pointer" onClick={onClose}>
+            <div className="text-5xl text-white font-bold text-center" style={{ fontFamily: "'Bitcount Prop Double', sans-serif" }}>
+                Hey! Stop doing that!
+            </div>
+        </div>
+    );
+};
+
+
+/**
+ * A generic modal component for displaying information like "About" or "Help".
+ * It adapts its appearance based on the selected UI theme.
+ */
 const InfoModal = ({ title, children, isOpen, onClose, uiTheme }) => {
     if (!isOpen) return null;
     const modalClass = {
@@ -69,6 +92,9 @@ const InfoModal = ({ title, children, isOpen, onClose, uiTheme }) => {
     );
 };
 
+/**
+ * Modal for creating and editing tickets. Includes AI-powered description generation.
+ */
 const TicketModal = ({ isOpen, onClose, onSave, ticket, uiTheme }) => {
     const [formData, setFormData] = useState({});
     const [linksInput, setLinksInput] = useState('');
@@ -101,7 +127,7 @@ const TicketModal = ({ isOpen, onClose, onSave, ticket, uiTheme }) => {
         setIsGenerating(true);
         const prompt = `Generate a professional and concise ticket description for a software development task titled "${formData.title}". The output must be only the description text. Do not include the title, headings, or any introductory phrases.`;
         try {
-            const apiKey = "";
+            const apiKey = ""; // API key is handled by the environment
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }] }] };
             const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -210,6 +236,9 @@ const TicketModal = ({ isOpen, onClose, onSave, ticket, uiTheme }) => {
     );
 };
 
+/**
+ * Represents a single draggable ticket card on the board.
+ */
 const Ticket = ({ ticket, onSelect, onDragStart, dragMode, uiTheme, theme }) => (
     <div draggable={dragMode === 'ticket'} onDragStart={(e) => onDragStart(e, ticket.id)} onClick={() => onSelect(ticket)}
         className={`p-4 mb-3 border-l-4 transition-all duration-200 ${dragMode === 'ticket' ? 'cursor-grab' : 'cursor-pointer'} hover:shadow-lg hover:scale-105 ${uiTheme === 'bento' ? 'bg-white dark:bg-black border-2 border-black dark:border-white rounded-none' : 'rounded-md'} ${uiTheme === 'glass' ? 'bg-white/30 dark:bg-black/30' : 'bg-white dark:bg-gray-700 shadow-sm'}` }
@@ -225,6 +254,9 @@ const Ticket = ({ ticket, onSelect, onDragStart, dragMode, uiTheme, theme }) => 
     </div>
 );
 
+/**
+ * Represents a column (e.g., "To Do", "In Progress") on the Kanban board.
+ */
 const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, onTitleChange, onColorChange, isFirstColumn, theme, onColumnDragStart, onColumnDrop, dragMode, uiTheme, onDeleteColumn }) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -295,7 +327,7 @@ const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, on
                                 className={`w-6 h-6 rounded-full border-2 hover:opacity-80 ${column.bgColor === lightColor ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white/50 dark:border-gray-500/50'}`}
                                 aria-label={`Set color to ${lightColor}`}
                             />
-                        );
+                         );
                     })}
                 </div>
             )}
@@ -306,6 +338,10 @@ const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, on
     );
 };
 
+/**
+ * Modal for displaying the full details of a selected ticket.
+ * It listens for real-time updates to the ticket data.
+ */
 const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, onAddComment, uiTheme }) => {
     const [liveTicket, setLiveTicket] = useState(null);
     const [editingLink, setEditingLink] = useState({ index: null, name: '' });
@@ -358,7 +394,7 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
             const comment = {
                 text: newComment.trim(),
                 author: auth.currentUser?.isAnonymous ? 'Anonymous' : auth.currentUser?.displayName || 'User',
-                createdAt: new Date() // Use client-side timestamp
+                createdAt: new Date() // Use client-side timestamp for immediate feedback
             };
             onAddComment(liveTicket.id, comment);
             setNewComment('');
@@ -367,6 +403,7 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
     
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return '...';
+        // Handle both Firestore Timestamps and client-side Date objects
         const date = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp.seconds * 1000);
         return date.toLocaleString();
     };
@@ -451,6 +488,9 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
     );
 };
 
+/**
+ * The main application component. Manages state, data fetching, and renders all other components.
+ */
 function App() {
     const [tickets, setTickets] = useState([]);
     const [columns, setColumns] = useState([]);
@@ -471,12 +511,15 @@ function App() {
     const [dragMode, setDragMode] = useState('ticket');
     const [columnToDelete, setColumnToDelete] = useState(null);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [logoClickCount, setLogoClickCount] = useState(0);
+    const [isEasterEggOpen, setIsEasterEggOpen] = useState(false);
     const menuButtonRef = useRef(null);
     const menuDropdownRef = useRef(null);
     const searchRef = useRef(null);
 
     useEffect(() => { loadGoogleFonts(); }, []);
 
+    // Effect for managing light/dark theme
     useEffect(() => {
         const root = window.document.documentElement;
         root.classList.remove(theme === 'light' ? 'dark' : 'light');
@@ -484,10 +527,12 @@ function App() {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
+    // Effect for persisting UI theme choice
     useEffect(() => {
         localStorage.setItem('uiTheme', uiTheme);
     }, [uiTheme]);
     
+    // Effect for handling clicks outside of menus to close them
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuButtonRef.current && !menuButtonRef.current.contains(event.target) && menuDropdownRef.current && !menuDropdownRef.current.contains(event.target)) {
@@ -501,21 +546,25 @@ function App() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Effect for handling Firebase authentication state
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) setIsAuthReady(true);
             else {
-                setIsAuthReady(false);
+                setIsAuthReady(false); // Set to false while attempting to sign in
                 try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
-                    else await signInAnonymously(auth);
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
                 } catch (error) { console.error("Authentication failed:", error); }
             }
         });
         return () => unsubscribe();
     }, []);
     
-    // Board Settings Listener
+    // Effect for fetching and listening to board settings (name, prefix)
     useEffect(() => {
         if (!isAuthReady) return;
         const boardSettingsRef = doc(db, `artifacts/${appId}/public/data/board`, 'settings');
@@ -523,19 +572,21 @@ function App() {
             if (doc.exists()) {
                 setBoardName(doc.data().name);
             } else {
+                // Initialize board settings if they don't exist
                 setDoc(boardSettingsRef, { name: 'My Board', prefix: 'MY' });
             }
         });
         return () => unsubscribe();
     }, [isAuthReady]);
 
-
+    // Effect for fetching and listening to column data, initializes default columns if none exist
     useEffect(() => {
         if (!isAuthReady) return;
         const columnsCollectionPath = `artifacts/${appId}/public/data/columns`;
         const q = query(collection(db, columnsCollectionPath));
         const unsubscribe = onSnapshot(q, async (snapshot) => {
             if (snapshot.empty) {
+                // Create default columns if the board is new
                 const batch = writeBatch(db);
                 const defaultCols = [
                     { title: 'To Do', order: 0, bgColor: '#F9FAFB' },
@@ -552,6 +603,7 @@ function App() {
         return () => unsubscribe();
     }, [isAuthReady]);
 
+    // Effect for fetching and listening to all tickets
     useEffect(() => {
         if (!isAuthReady) return;
         setIsLoading(true);
@@ -564,6 +616,7 @@ function App() {
         return () => unsubscribe();
     }, [isAuthReady]);
 
+    // Effect for filtering tickets based on the search query
     useEffect(() => {
         if (searchQuery.trim() === '') {
             setSearchResults([]);
@@ -577,6 +630,17 @@ function App() {
         setSearchResults(filtered);
     }, [searchQuery, tickets]);
     
+    // --- Data Manipulation Functions ---
+
+    const handleLogoClick = () => {
+        const newCount = logoClickCount + 1;
+        setLogoClickCount(newCount);
+        if (newCount >= 5) {
+            setIsEasterEggOpen(true);
+            setLogoClickCount(0); // Reset counter after showing the modal
+        }
+    };
+
     const handleUpdateTicket = async (ticketId, updateData) => {
         const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
         await setDoc(ticketRef, updateData, { merge: true });
@@ -592,24 +656,28 @@ function App() {
     const handleSaveTicket = async (ticketData) => {
         const ticketsCollectionPath = `artifacts/${appId}/public/data/tickets`;
         
+        // Handle editing an existing ticket
         if (editingTicket) {
              await setDoc(doc(db, ticketsCollectionPath, editingTicket.id), { ...editingTicket, ...ticketData }, { merge: true });
              handleCloseModals();
              return;
         }
 
+        // Handle creating a new ticket
         const newTicketRef = doc(collection(db, ticketsCollectionPath));
 
+        // Optimistic UI update
         const optimisticTicket = {
             id: newTicketRef.id,
             ...ticketData,
             status: columns[0]?.title || 'To Do',
             accentColor: generateRandomVibrantColor(),
-            ticketId: '...',
+            ticketId: '...', // Placeholder until transaction completes
         };
         setTickets(prev => [...prev, optimisticTicket]);
         handleCloseModals();
 
+        // Firestore transaction to ensure atomic update of ticket and counter
         try {
             const counterRef = doc(db, `artifacts/${appId}/public/data/metadata`, 'ticketCounter');
             const boardSettingsRef = doc(db, `artifacts/${appId}/public/data/board`, 'settings');
@@ -634,6 +702,7 @@ function App() {
             });
         } catch (error) { 
             console.error("Error saving ticket:", error);
+            // Revert optimistic update on failure
             setTickets(prev => prev.filter(t => t.id !== newTicketRef.id));
         }
     };
@@ -641,14 +710,16 @@ function App() {
     const handleDeleteTicket = async (ticketId) => {
         if (!ticketId) return;
         await deleteDoc(doc(db, `artifacts/${appId}/public/data/tickets`, ticketId));
-        setSelectedTicket(null);
+        setSelectedTicket(null); // Close the detail modal
     };
     
     const handleDeleteColumn = (columnId, ticketsInColumn) => {
+        // If column has tickets, show confirmation modal
         if (ticketsInColumn.length > 0) {
             const column = columns.find(c => c.id === columnId);
             setColumnToDelete({ ...column, tickets: ticketsInColumn });
         } else {
+            // Otherwise, delete immediately
             deleteDoc(doc(db, `artifacts/${appId}/public/data/columns`, columnId));
         }
     };
@@ -657,7 +728,7 @@ function App() {
         if (!columnToDelete) return;
         const batch = writeBatch(db);
         
-        // Delete all tickets in the column
+        // Delete all tickets within the column
         columnToDelete.tickets.forEach(ticket => {
             const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticket.id);
             batch.delete(ticketRef);
@@ -672,7 +743,6 @@ function App() {
         setDeleteConfirmText('');
     };
 
-
     const handleBoardNameChange = async (newBoardName) => {
         const trimmedName = newBoardName.trim();
         if (!trimmedName || trimmedName === boardName) {
@@ -680,17 +750,19 @@ function App() {
             return;
         }
 
-        const oldPrefix = (boardName.split(' ')[0].substring(0, 2) || 'MY').toUpperCase();
-        const newPrefix = (trimmedName.split(' ')[0].substring(0, 2) || 'MY').toUpperCase();
+        const oldPrefix = (boardName.match(/\b(\w)/g) || ['M','Y']).join('').substring(0,2).toUpperCase();
+        const newPrefix = (trimmedName.match(/\b(\w)/g) || ['M','Y']).join('').substring(0,2).toUpperCase();
         
         const boardSettingsRef = doc(db, `artifacts/${appId}/public/data/board`, 'settings');
 
+        // If prefix hasn't changed, just update the name
         if (oldPrefix === newPrefix) {
             await setDoc(boardSettingsRef, { name: trimmedName, prefix: newPrefix }, { merge: true });
             setIsEditingBoardName(false);
             return;
         }
 
+        // If prefix changed, update all existing ticket IDs in a batch
         const batch = writeBatch(db);
         batch.set(boardSettingsRef, { name: trimmedName, prefix: newPrefix }, { merge: true });
         
@@ -710,12 +782,14 @@ function App() {
         setIsEditingBoardName(false);
     };
 
-
     const handleColumnTitleChange = async (id, newTitle) => {
         const oldTitle = columns.find(c => c.id === id)?.title;
         if (oldTitle === newTitle || !oldTitle) return;
+
+        // Update the column's title
         await setDoc(doc(db, `artifacts/${appId}/public/data/columns`, id), { title: newTitle }, { merge: true });
         
+        // Batch update all tickets that were in the old column
         const ticketsToUpdateQuery = query(collection(db, `artifacts/${appId}/public/data/tickets`), where("status", "==", oldTitle));
         const batch = writeBatch(db);
         const snapshot = await getDocs(ticketsToUpdateQuery);
@@ -726,7 +800,7 @@ function App() {
     const handleColumnColorChange = async (id, newColor) => await setDoc(doc(db, `artifacts/${appId}/public/data/columns`, id), { bgColor: newColor }, { merge: true });
 
     const handleAddColumn = async () => {
-        if (columns.length >= 7) return;
+        if (columns.length >= 7) return; // Limit number of columns
         const newOrder = columns.length > 0 ? Math.max(...columns.map(c => c.order)) + 1 : 0;
         const newColor = PASTEL_BG_COLORS[columns.length % PASTEL_BG_COLORS.length];
         await addDoc(collection(db, `artifacts/${appId}/public/data/columns`), { title: 'New Column', order: newOrder, bgColor: newColor });
@@ -744,10 +818,12 @@ function App() {
         const sourceIndex = columns.findIndex(c => c.id === sourceColumnId);
         const targetIndex = columns.findIndex(c => c.id === targetColumnId);
 
+        // Reorder columns array for optimistic update
         const reorderedColumns = [...columns];
         const [removed] = reorderedColumns.splice(sourceIndex, 1);
         reorderedColumns.splice(targetIndex, 0, removed);
 
+        // Batch update the `order` field in Firestore
         const batch = writeBatch(db);
         reorderedColumns.forEach((col, index) => {
             const colRef = doc(db, `artifacts/${appId}/public/data/columns`, col.id);
@@ -756,13 +832,14 @@ function App() {
         batch.commit();
     };
 
-
+    // --- Modal Control Functions ---
     const handleOpenCreateModal = () => { setEditingTicket(null); setTicketModalOpen(true); };
     const handleOpenEditModal = (ticketToEdit) => { setEditingTicket(ticketToEdit); setSelectedTicket(null); setTicketModalOpen(true); };
     const handleCloseModals = () => { setSelectedTicket(null); setEditingTicket(null); setTicketModalOpen(false); };
 
     return (
         <div className={`font-sans h-screen flex flex-col transition-colors duration-300 ${uiTheme === 'glass' ? 'text-white' : ''}`} style={{ fontFamily: "'Roboto', sans-serif" }}>
+            {/* Background effects for the 'glass' theme */}
             {uiTheme === 'glass' && (
                 <>
                     <div className="animated-gradient-bg"></div>
@@ -792,7 +869,7 @@ function App() {
             <div className={`relative z-0 flex flex-col h-full ${uiTheme === 'classic' ? 'bg-gray-50 dark:bg-gray-900' : ''}`}>
                 <header className={`p-4 flex justify-between items-center border-b flex-shrink-0 ${uiTheme === 'glass' ? 'bg-white/10 dark:bg-black/10 backdrop-blur-xl border-white/20 dark:border-gray-700/20' : 'bg-white dark:bg-gray-800 shadow-sm border-gray-200 dark:border-gray-700'}`}>
                     <div className="flex items-center space-x-4">
-                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100" style={{ fontFamily: "'Bitcount Prop Double', sans-serif" }}>Jocco</h1>
+                        <h1 onClick={handleLogoClick} className="text-3xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer" style={{ fontFamily: "'Bitcount Prop Double', sans-serif" }}>Jocco</h1>
                         {isEditingBoardName ? (
                             <input type="text" defaultValue={boardName}
                                 onBlur={(e) => handleBoardNameChange(e.target.value)}
@@ -876,7 +953,7 @@ function App() {
                     <a href="#" onClick={(e) => { e.preventDefault(); setDragMode(prev => prev === 'ticket' ? 'column' : 'ticket'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Drag Mode: {dragMode === 'ticket' ? 'Tickets' : 'Columns'}</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setIsHelpModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Help</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setIsAboutModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">About</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Log Out</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); auth.signOut(); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Log Out</a>
                 </div>
             )}
             
@@ -912,8 +989,10 @@ function App() {
                     </div>
                 </InfoModal>
             )}
+            <EasterEggModal isOpen={isEasterEggOpen} onClose={() => setIsEasterEggOpen(false)} />
         </div>
     );
 }
 
 export default App;
+
