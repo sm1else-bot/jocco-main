@@ -4,6 +4,16 @@ A detailed history of the development of the Jocco project management tool.
 
 ---
 
+### **v0.6: The Sentinel Update**
+
+* **Feature:** Ticket Archiving: Never lose a ticket again! Deleted tickets are now sent to an archive, accessible from the main menu. From there, you can restore them to the board or delete them permanently.
+
+* **Feature:** Smarter AI Descriptions: The Gen AI for ticket descriptions is now much more intelligent. It acts like a product manager, using the ticket title to generate a clear user story and a list of acceptance criteria, making descriptions far more useful.
+
+* **Improvement:** UI Clarity: The "Delete" button in the ticket view has been replaced with a more accurate "Archive" button and icon. The new design uses neutral colors that work well in both light and dark modes.
+
+* **Fix:** Ticket Restoration: Squashed a bug where restoring a ticket from a deleted column would leave it in limbo. All restored tickets now correctly appear in the "To Do" column.
+
 ### **Version 0.5: The Great UI Revamp**
 
 This version introduced a powerful theme engine, allowing for a complete visual overhaul of the application and adding a new level of personalization.
