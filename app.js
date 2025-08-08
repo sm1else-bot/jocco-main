@@ -46,11 +46,19 @@ const SearchIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5
 
 // --- Components ---
 
-const InfoModal = ({ title, children, isOpen, onClose }) => {
+const InfoModal = ({ title, children, isOpen, onClose, uiTheme }) => {
     if (!isOpen) return null;
+    const modalClass = {
+        classic: 'bg-white dark:bg-gray-800',
+        glass: 'bg-white/10 dark:bg-gray-800/10 backdrop-blur-xl border border-white/20',
+        bento: 'bg-white dark:bg-gray-900 border-2 border-black dark:border-white'
+    }[uiTheme];
+    
+    const textColorClass = uiTheme === 'glass' ? 'text-white' : 'text-gray-800 dark:text-gray-200';
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg p-6 relative text-gray-800 dark:text-gray-200">
+            <div className={`${modalClass} rounded-none shadow-xl w-full max-w-lg p-6 relative ${textColorClass}`}>
                 <h2 className="text-2xl font-bold mb-4">{title}</h2>
                 <div className="prose dark:prose-invert max-w-none text-sm">{children}</div>
                 <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">
@@ -61,11 +69,20 @@ const InfoModal = ({ title, children, isOpen, onClose }) => {
     );
 };
 
-const TicketModal = ({ isOpen, onClose, onSave, ticket }) => {
+const TicketModal = ({ isOpen, onClose, onSave, ticket, uiTheme }) => {
     const [formData, setFormData] = useState({});
     const [linksInput, setLinksInput] = useState('');
     const [checklistItem, setChecklistItem] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+
+    const modalClass = {
+        classic: 'bg-white dark:bg-gray-800 rounded-lg',
+        glass: 'bg-white/10 dark:bg-gray-800/10 backdrop-blur-xl border border-white/20 rounded-lg',
+        bento: 'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-none'
+    }[uiTheme];
+    const textColorClass = uiTheme === 'glass' ? 'text-white' : 'text-gray-800 dark:text-gray-200';
+    const inputTextColorClass = uiTheme === 'glass' ? 'text-black' : 'dark:text-white';
+
 
     useEffect(() => {
         const initialData = {
@@ -134,24 +151,24 @@ const TicketModal = ({ isOpen, onClose, onSave, ticket }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6 text-gray-800 dark:text-gray-200">
+            <div className={`${modalClass} shadow-xl w-full max-w-2xl p-6 ${textColorClass}`}>
                 <h2 className="text-2xl font-bold mb-6">{ticket ? 'Edit Ticket' : 'Create New Ticket'}</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label htmlFor="title" className="block text-sm font-bold mb-2">Title</label>
-                        <input id="title" name="title" type="text" value={formData.title || ''} onChange={handleChange} className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required />
+                        <input id="title" name="title" type="text" value={formData.title || ''} onChange={handleChange} className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`} required />
                     </div>
                     <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                            <label htmlFor="description" className="block text-sm font-bold">Description</label>
                            <button type="button" onClick={handleGenerateDescription} disabled={isGenerating} className="flex items-center text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"> <SparklesIcon /><span className="ml-1">{isGenerating ? 'Generating...' : '✨ Generate with AI'}</span></button>
                         </div>
-                        <textarea id="description" name="description" value={formData.description || ''} onChange={handleChange} className="shadow appearance-none border rounded w-full py-2 px-3 h-24 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <textarea id="description" name="description" value={formData.description || ''} onChange={handleChange} className={`shadow appearance-none border rounded w-full py-2 px-3 h-24 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`} />
                     </div>
                      <div className="mb-4">
                         <label htmlFor="checklist" className="block text-sm font-bold mb-2">Checklist</label>
                         <div className="flex">
-                            <input id="checklist" type="text" value={checklistItem} onChange={(e) => setChecklistItem(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddChecklistItem())} className="shadow appearance-none border rounded-l w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <input id="checklist" type="text" value={checklistItem} onChange={(e) => setChecklistItem(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddChecklistItem())} className={`shadow appearance-none border rounded-l w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`} />
                             <button type="button" onClick={handleAddChecklistItem} className="bg-blue-500 text-white font-bold py-2 px-4 rounded-r hover:bg-blue-600">Add</button>
                         </div>
                         <ul className="mt-2 text-sm">
@@ -167,18 +184,18 @@ const TicketModal = ({ isOpen, onClose, onSave, ticket }) => {
                     </div>
                      <div className="mb-4">
                         <label htmlFor="links" className="block text-sm font-bold mb-2">Links (comma-separated)</label>
-                        <textarea id="links" name="links" value={linksInput} onChange={(e) => setLinksInput(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 h-20 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <textarea id="links" name="links" value={linksInput} onChange={(e) => setLinksInput(e.target.value)} className={`shadow appearance-none border rounded w-full py-2 px-3 h-20 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         {Object.entries({assignee: 'text', priority: 'select', storyPoints: 'number', startDate: 'date', endDate: 'date'}).map(([key, type]) => (
                             <div key={key}>
                                 <label htmlFor={key} className="block text-sm font-bold mb-2 capitalize">{key.replace('Date', ' Date').replace('Points', ' Points')}</label>
                                 {type === 'select' ? (
-                                    <select id={key} name={key} value={formData[key] || 'Medium'} onChange={handleChange} className="shadow border rounded w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <select id={key} name={key} value={formData[key] || 'Medium'} onChange={handleChange} className={`shadow border rounded w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`}>
                                         <option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
                                     </select>
                                 ) : (
-                                    <input id={key} name={key} type={type} value={formData[key] || ''} onChange={handleChange} className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                    <input id={key} name={key} type={type} value={formData[key] || ''} onChange={handleChange} className={`shadow appearance-none border rounded w-full py-2 px-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`} />
                                 )}
                             </div>
                         ))}
@@ -193,22 +210,22 @@ const TicketModal = ({ isOpen, onClose, onSave, ticket }) => {
     );
 };
 
-const Ticket = ({ ticket, onSelect, onDragStart, dragMode }) => (
+const Ticket = ({ ticket, onSelect, onDragStart, dragMode, uiTheme, theme }) => (
     <div draggable={dragMode === 'ticket'} onDragStart={(e) => onDragStart(e, ticket.id)} onClick={() => onSelect(ticket)}
-        className={`bg-white dark:bg-gray-700 rounded-md shadow-sm p-4 mb-3 border-l-4 transition-shadow duration-200 ${dragMode === 'ticket' ? 'cursor-grab' : 'cursor-pointer'} hover:shadow-lg` }
-        style={{ borderColor: ticket.accentColor || '#6B7280' }}>
+        className={`p-4 mb-3 border-l-4 transition-all duration-200 ${dragMode === 'ticket' ? 'cursor-grab' : 'cursor-pointer'} hover:shadow-lg hover:scale-105 ${uiTheme === 'bento' ? 'bg-white dark:bg-black border-2 border-black dark:border-white rounded-none' : 'rounded-md'} ${uiTheme === 'glass' ? 'bg-white/30 dark:bg-black/30' : 'bg-white dark:bg-gray-700 shadow-sm'}` }
+        style={{ borderColor: uiTheme === 'bento' ? (theme === 'dark' ? 'white' : 'black') : ticket.accentColor || '#6B7280' }}>
         <div className="flex justify-between items-start">
-            <h4 className="font-semibold text-gray-800 dark:text-gray-100 pr-2">{ticket.title}</h4>
-            <span className="text-xs font-mono text-gray-500 dark:text-gray-400 flex-shrink-0">{ticket.ticketId}</span>
+            <h4 className={`font-semibold pr-2 ${uiTheme === 'glass' || (uiTheme === 'bento' && theme === 'dark') ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}>{ticket.title}</h4>
+            <span className={`text-xs font-mono flex-shrink-0 ${uiTheme === 'glass' || (uiTheme === 'bento' && theme === 'dark') ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`}>{ticket.ticketId}</span>
         </div>
         <div className="flex justify-between items-center mt-3">
             {ticket.assignee ? <UserIcon name={ticket.assignee} /> : <div/>}
-            {ticket.storyPoints > 0 && <span className="text-xs font-bold bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-2 py-1 rounded-full">{ticket.storyPoints}</span>}
+            {ticket.storyPoints > 0 && <span className={`text-xs font-bold px-2 py-1 rounded-full ${uiTheme === 'glass' || (uiTheme === 'bento' && theme === 'dark') ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200'}`}>{ticket.storyPoints}</span>}
         </div>
     </div>
 );
 
-const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, onTitleChange, onColorChange, isFirstColumn, theme, onColumnDragStart, onColumnDrop, dragMode }) => {
+const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, onTitleChange, onColorChange, isFirstColumn, theme, onColumnDragStart, onColumnDrop, dragMode, uiTheme, onDeleteColumn }) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(column.title);
@@ -220,6 +237,7 @@ const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, on
     };
 
     const getColumnBgColor = () => {
+        if (uiTheme === 'glass' || uiTheme === 'bento') return 'transparent';
         if (theme === 'dark') {
             if (isFirstColumn) return '#1F2937'; // Dark gray for "To Do"
             const lightColorIndex = PASTEL_BG_COLORS.indexOf(column.bgColor);
@@ -227,6 +245,14 @@ const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, on
         }
         return column.bgColor; // Light theme color
     };
+    
+    const columnClasses = {
+        classic: 'shadow-md rounded-lg',
+        glass: 'bg-white/20 dark:bg-black/20 backdrop-blur-xl border border-white/20 rounded-lg',
+        bento: 'bg-gray-100 dark:bg-gray-800 border-2 border-black dark:border-white rounded-none'
+    }[uiTheme];
+
+    const titleColorClass = uiTheme === 'glass' ? 'text-white' : 'text-gray-700 dark:text-gray-200';
 
     const handleDrop = (e) => {
         e.preventDefault();
@@ -243,16 +269,23 @@ const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, on
             onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             style={{ backgroundColor: getColumnBgColor() }}
-            className={`flex-shrink-0 w-80 rounded-lg p-3 mr-4 shadow-md transition-all duration-300 ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}>
+            className={`flex-shrink-0 w-80 p-3 mr-4 transition-all duration-300 ${columnClasses} ${isDragOver ? 'ring-2 ring-blue-500' : ''}`}>
             <div className={`flex justify-between items-center mb-2 ${dragMode === 'column' ? 'cursor-grab' : ''}`}>
                 {isEditing ? (
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={handleTitleBlur} onKeyDown={(e) => e.key === 'Enter' && e.target.blur()} autoFocus className="font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-blue-500 rounded px-2 py-1 w-full"/>
+                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={handleTitleBlur} onKeyDown={(e) => e.key === 'Enter' && e.target.blur()} autoFocus className={`font-bold bg-white dark:bg-gray-700 border border-blue-500 rounded px-2 py-1 w-full ${uiTheme === 'glass' ? 'text-black' : 'text-gray-700 dark:text-gray-200'}`}/>
                 ) : (
-                    <h3 onClick={() => setIsEditing(true)} className="font-bold text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 px-2 py-1 rounded">{column.title}</h3>
+                    <h3 onClick={() => setIsEditing(true)} className={`font-bold cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 px-2 py-1 rounded ${titleColorClass}`}>{column.title}</h3>
                 )}
-                <span className="bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-sm font-semibold px-2 py-1 rounded-full">{tickets.length}</span>
+                <div className="flex items-center">
+                    <span className="bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-sm font-semibold px-2 py-1 rounded-full">{tickets.length}</span>
+                    {!isFirstColumn && (
+                        <button onClick={() => onDeleteColumn(column.id, tickets)} className="ml-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400">
+                            <TrashIcon />
+                        </button>
+                    )}
+                </div>
             </div>
-             {isEditing && !isFirstColumn && (
+             {isEditing && !isFirstColumn && uiTheme === 'classic' && (
                 <div className="mb-4 flex items-center justify-center space-x-2">
                     {PASTEL_BG_COLORS.map((lightColor, index) => {
                          const displayColor = theme === 'dark' ? DARK_PASTEL_BG_COLORS[index] : lightColor;
@@ -267,16 +300,25 @@ const Column = ({ column, tickets, onTicketDrop, onSelectTicket, onDragStart, on
                 </div>
             )}
             <div className="h-full min-h-[100px]">
-                {tickets.map(ticket => <Ticket key={ticket.id} ticket={ticket} onSelect={onSelectTicket} onDragStart={onDragStart} dragMode={dragMode} />)}
+                {tickets.map(ticket => <Ticket key={ticket.id} ticket={ticket} onSelect={onSelectTicket} onDragStart={onDragStart} dragMode={dragMode} uiTheme={uiTheme} theme={theme} />)}
             </div>
         </div>
     );
 };
 
-const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, onAddComment }) => {
+const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, onAddComment, uiTheme }) => {
     const [liveTicket, setLiveTicket] = useState(null);
     const [editingLink, setEditingLink] = useState({ index: null, name: '' });
     const [newComment, setNewComment] = useState('');
+
+    const modalClass = {
+        classic: 'bg-white dark:bg-gray-800 rounded-lg',
+        glass: 'bg-white/10 dark:bg-gray-800/10 backdrop-blur-xl border border-white/20 rounded-lg',
+        bento: 'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-none'
+    }[uiTheme];
+    const textColorClass = uiTheme === 'glass' ? 'text-white' : 'text-gray-800 dark:text-gray-200';
+    const inputTextColorClass = uiTheme === 'glass' ? 'text-black' : 'dark:text-white';
+
 
     useEffect(() => {
         if (!ticket?.id) {
@@ -333,7 +375,7 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6 relative text-gray-800 dark:text-gray-200">
+            <div className={`${modalClass} shadow-xl w-full max-w-2xl p-6 relative ${textColorClass}`}>
                 <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -341,7 +383,7 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
                     <h2 className="text-3xl font-bold mb-4">{liveTicket.title}</h2>
                     <span className="text-lg font-mono text-gray-500 dark:text-gray-400 mt-1">{liveTicket.ticketId}</span>
                 </div>
-                <p className="my-6 whitespace-pre-wrap bg-gray-50 dark:bg-gray-700 p-4 rounded-md">{liveTicket.description || "No description provided."}</p>
+                <p className={`my-6 whitespace-pre-wrap bg-gray-50 dark:bg-gray-700 p-4 rounded-md ${inputTextColorClass}`}>{liveTicket.description || "No description provided."}</p>
                 
                 {liveTicket.checklist && liveTicket.checklist.length > 0 && (
                     <div className="my-6">
@@ -395,7 +437,7 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
                         ))}
                     </div>
                     <div className="mt-4">
-                        <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Add a comment..." className="w-full p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></textarea>
+                        <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Add a comment..." className={`w-full p-2 text-sm border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${inputTextColorClass}`}></textarea>
                         <button onClick={handleAddCommentClick} className="mt-2 bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-sm hover:bg-blue-700">Add Comment</button>
                     </div>
                 </div>
@@ -420,13 +462,17 @@ function App() {
     const [editingTicket, setEditingTicket] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [uiTheme, setUiTheme] = useState(localStorage.getItem('uiTheme') || 'classic');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [dragMode, setDragMode] = useState('ticket');
-    const menuRef = useRef(null);
+    const [columnToDelete, setColumnToDelete] = useState(null);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const menuButtonRef = useRef(null);
+    const menuDropdownRef = useRef(null);
     const searchRef = useRef(null);
 
     useEffect(() => { loadGoogleFonts(); }, []);
@@ -437,15 +483,23 @@ function App() {
         root.classList.add(theme);
         localStorage.setItem('theme', theme);
     }, [theme]);
+
+    useEffect(() => {
+        localStorage.setItem('uiTheme', uiTheme);
+    }, [uiTheme]);
     
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) setIsMenuOpen(false);
-            if (searchRef.current && !searchRef.current.contains(event.target)) setSearchResults([]);
+            if (menuButtonRef.current && !menuButtonRef.current.contains(event.target) && menuDropdownRef.current && !menuDropdownRef.current.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setSearchResults([]);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [menuRef, searchRef]);
+    }, []);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -537,16 +591,17 @@ function App() {
 
     const handleSaveTicket = async (ticketData) => {
         const ticketsCollectionPath = `artifacts/${appId}/public/data/tickets`;
-        const tempId = `temp-${Date.now()}`;
-
+        
         if (editingTicket) {
              await setDoc(doc(db, ticketsCollectionPath, editingTicket.id), { ...editingTicket, ...ticketData }, { merge: true });
              handleCloseModals();
              return;
         }
 
+        const newTicketRef = doc(collection(db, ticketsCollectionPath));
+
         const optimisticTicket = {
-            id: tempId,
+            id: newTicketRef.id,
             ...ticketData,
             status: columns[0]?.title || 'To Do',
             accentColor: generateRandomVibrantColor(),
@@ -568,7 +623,6 @@ function App() {
                 
                 const ticketId = `${prefix}-${String(newCount).padStart(3, '0')}`;
                 
-                const newTicketRef = doc(collection(db, ticketsCollectionPath));
                 transaction.set(newTicketRef, { 
                     ...ticketData, 
                     ticketId,
@@ -580,7 +634,7 @@ function App() {
             });
         } catch (error) { 
             console.error("Error saving ticket:", error);
-            setTickets(prev => prev.filter(t => t.id !== tempId));
+            setTickets(prev => prev.filter(t => t.id !== newTicketRef.id));
         }
     };
     
@@ -589,6 +643,35 @@ function App() {
         await deleteDoc(doc(db, `artifacts/${appId}/public/data/tickets`, ticketId));
         setSelectedTicket(null);
     };
+    
+    const handleDeleteColumn = (columnId, ticketsInColumn) => {
+        if (ticketsInColumn.length > 0) {
+            const column = columns.find(c => c.id === columnId);
+            setColumnToDelete({ ...column, tickets: ticketsInColumn });
+        } else {
+            deleteDoc(doc(db, `artifacts/${appId}/public/data/columns`, columnId));
+        }
+    };
+
+    const confirmDeleteColumn = async () => {
+        if (!columnToDelete) return;
+        const batch = writeBatch(db);
+        
+        // Delete all tickets in the column
+        columnToDelete.tickets.forEach(ticket => {
+            const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticket.id);
+            batch.delete(ticketRef);
+        });
+
+        // Delete the column itself
+        const columnRef = doc(db, `artifacts/${appId}/public/data/columns`, columnToDelete.id);
+        batch.delete(columnRef);
+
+        await batch.commit();
+        setColumnToDelete(null);
+        setDeleteConfirmText('');
+    };
+
 
     const handleBoardNameChange = async (newBoardName) => {
         const trimmedName = newBoardName.trim();
@@ -679,96 +762,131 @@ function App() {
     const handleCloseModals = () => { setSelectedTicket(null); setEditingTicket(null); setTicketModalOpen(false); };
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 font-sans h-screen flex flex-col transition-colors duration-300" style={{ fontFamily: "'Roboto', sans-serif" }}>
-            <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <div className="flex items-center space-x-4">
-                    <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100" style={{ fontFamily: "'Bitcount Prop Double', sans-serif" }}>Jocco</h1>
-                    {isEditingBoardName ? (
-                        <input type="text" defaultValue={boardName}
-                            onBlur={(e) => handleBoardNameChange(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleBoardNameChange(e.target.value)}
-                            className="text-xl font-semibold bg-transparent border-b-2 border-blue-500 text-gray-700 dark:text-gray-200 focus:outline-none" autoFocus />
-                    ) : (
-                        <h2 onClick={() => setIsEditingBoardName(true)} className="text-xl font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-white">{boardName}</h2>
-                    )}
-                </div>
-                <div className="flex items-center space-x-2">
-                    <div className="relative" ref={searchRef}>
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <SearchIcon />
+        <div className={`font-sans h-screen flex flex-col transition-colors duration-300 ${uiTheme === 'glass' ? 'text-white' : ''}`} style={{ fontFamily: "'Roboto', sans-serif" }}>
+            {uiTheme === 'glass' && (
+                <>
+                    <div className="animated-gradient-bg"></div>
+                    <ul className="floating-shapes">
+                        <li></li><li></li><li></li><li></li><li></li>
+                        <li></li><li></li><li></li><li></li><li></li>
+                    </ul>
+                </>
+            )}
+            <style>{`
+                .animated-gradient-bg { width: 100%; height: 100%; position: fixed; top: 0; left: 0; z-index: -2; background: linear-gradient(45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: gradient 15s ease infinite; }
+                @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+                .floating-shapes { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; }
+                .floating-shapes li { position: absolute; display: block; list-style: none; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.2); animation: float 25s linear infinite; bottom: -150px; }
+                .floating-shapes li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+                .floating-shapes li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+                .floating-shapes li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+                .floating-shapes li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+                .floating-shapes li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+                .floating-shapes li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+                .floating-shapes li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+                .floating-shapes li:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+                .floating-shapes li:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; }
+                .floating-shapes li:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+                @keyframes float { 0% { transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; } 100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; } }
+            `}</style>
+            <div className={`relative z-0 flex flex-col h-full ${uiTheme === 'classic' ? 'bg-gray-50 dark:bg-gray-900' : ''}`}>
+                <header className={`p-4 flex justify-between items-center border-b flex-shrink-0 ${uiTheme === 'glass' ? 'bg-white/10 dark:bg-black/10 backdrop-blur-xl border-white/20 dark:border-gray-700/20' : 'bg-white dark:bg-gray-800 shadow-sm border-gray-200 dark:border-gray-700'}`}>
+                    <div className="flex items-center space-x-4">
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100" style={{ fontFamily: "'Bitcount Prop Double', sans-serif" }}>Jocco</h1>
+                        {isEditingBoardName ? (
+                            <input type="text" defaultValue={boardName}
+                                onBlur={(e) => handleBoardNameChange(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleBoardNameChange(e.target.value)}
+                                className="text-xl font-semibold bg-transparent border-b-2 border-blue-500 text-gray-700 dark:text-gray-200 focus:outline-none" autoFocus />
+                        ) : (
+                            <h2 onClick={() => setIsEditingBoardName(true)} className="text-xl font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-white">{boardName}</h2>
+                        )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <div className="relative" ref={searchRef}>
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <SearchIcon />
+                            </div>
+                            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                            {searchResults.length > 0 && (
+                                <div className="absolute mt-1 w-72 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-auto z-40">
+                                    <ul className="py-1">
+                                        {searchResults.map(ticket => (
+                                            <li key={ticket.id} onClick={() => { setSelectedTicket(ticket); setSearchQuery(''); }}
+                                                className="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                <span className="font-semibold block truncate">{ticket.ticketId}</span>
+                                                <span className="text-sm text-gray-600 dark:text-gray-400 block truncate">{ticket.title}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
-                        <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                        {searchResults.length > 0 && (
-                            <div className="absolute mt-1 w-72 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-auto z-10">
-                                <ul className="py-1">
-                                    {searchResults.map(ticket => (
-                                        <li key={ticket.id} onClick={() => { setSelectedTicket(ticket); setSearchQuery(''); }}
-                                            className="text-gray-900 dark:text-gray-200 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                            <span className="font-semibold block truncate">{ticket.ticketId}</span>
-                                            <span className="text-sm text-gray-600 dark:text-gray-400 block truncate">{ticket.title}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
-                        {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-                    </button>
-                    <button onClick={handleOpenCreateModal} className="flex items-center bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 shadow">
-                        <PlusIcon /> <span className="ml-2 hidden sm:inline">Create Ticket</span>
-                    </button>
-                    <div className="relative" ref={menuRef}>
-                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
-                            <MenuIcon />
+                        <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} disabled={uiTheme === 'glass'} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
                         </button>
-                        {isMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-20">
-                                <a href="#" onClick={(e) => { e.preventDefault(); setDragMode(prev => prev === 'ticket' ? 'column' : 'ticket'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Drag Mode: {dragMode === 'ticket' ? 'Tickets' : 'Columns'}</a>
-                                <a href="#" onClick={(e) => { e.preventDefault(); setIsHelpModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Help</a>
-                                <a href="#" onClick={(e) => { e.preventDefault(); setIsAboutModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">About</a>
-                                <a href="#" onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Log Out</a>
-                            </div>
-                        )}
+                        <button onClick={handleOpenCreateModal} className="flex items-center bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 shadow">
+                            <PlusIcon /> <span className="ml-2 hidden sm:inline">Create Ticket</span>
+                        </button>
+                        <div className="relative">
+                            <button ref={menuButtonRef} onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
+                                <MenuIcon />
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <main className="flex-grow p-4 overflow-x-auto">
-                {isLoading || !isAuthReady ? <div className="flex justify-center items-center h-full text-lg text-gray-500 dark:text-gray-400">Loading Board...</div> : (
-                    <div className="flex h-full">
-                        {columns.map((column, index) => (
-                            <Column key={column.id} column={column} tickets={tickets.filter(t => t.status === column.title)}
-                                onTicketDrop={onTicketDrop}
-                                onSelectTicket={setSelectedTicket} onDragStart={(e, id) => e.dataTransfer.setData('ticketId', id)}
-                                onTitleChange={handleColumnTitleChange}
-                                onColorChange={handleColumnColorChange}
-                                isFirstColumn={index === 0}
-                                theme={theme}
-                                onColumnDragStart={(e, id) => e.dataTransfer.setData('columnId', id)}
-                                onColumnDrop={handleColumnDrop}
-                                dragMode={dragMode}
-                            />
-                        ))}
-                        {columns.length < 7 && (
-                            <div className="flex-shrink-0 w-80">
-                                <button onClick={handleAddColumn} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center">
-                                    <PlusIcon className="h-6 w-6"/> <span className="ml-2">Add another list</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </main>
+                <main className="flex-grow p-4 overflow-x-auto">
+                    {isLoading || !isAuthReady ? <div className="flex justify-center items-center h-full text-lg text-gray-500 dark:text-gray-400">Loading Board...</div> : (
+                        <div className="flex h-full">
+                            {columns.map((column, index) => (
+                                <Column key={column.id} column={column} tickets={tickets.filter(t => t.status === column.title)}
+                                    onTicketDrop={onTicketDrop}
+                                    onSelectTicket={setSelectedTicket} onDragStart={(e, id) => e.dataTransfer.setData('ticketId', id)}
+                                    onTitleChange={handleColumnTitleChange}
+                                    onColorChange={handleColumnColorChange}
+                                    isFirstColumn={index === 0}
+                                    theme={theme}
+                                    onColumnDragStart={(e, id) => e.dataTransfer.setData('columnId', id)}
+                                    onColumnDrop={handleColumnDrop}
+                                    dragMode={dragMode}
+                                    uiTheme={uiTheme}
+                                    onDeleteColumn={handleDeleteColumn}
+                                />
+                            ))}
+                            {columns.length < 7 && (
+                                <div className="flex-shrink-0 w-80">
+                                    <button onClick={handleAddColumn} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                                        <PlusIcon className="h-6 w-6"/> <span className="ml-2">Add another list</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </main>
+            </div>
+             {isMenuOpen && (
+                <div ref={menuDropdownRef} className="absolute top-16 right-4 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="px-4 py-2 text-xs text-gray-400">UI Theme</div>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setUiTheme('classic'); }} className={`block px-4 py-2 text-sm ${uiTheme === 'classic' ? 'font-bold' : ''} text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700`}>Classic</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setUiTheme('glass'); }} className={`block px-4 py-2 text-sm ${uiTheme === 'glass' ? 'font-bold' : ''} text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700`}>Glass</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setUiTheme('bento'); }} className={`block px-4 py-2 text-sm ${uiTheme === 'bento' ? 'font-bold' : ''} text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700`}>Bento</a>
+                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setDragMode(prev => prev === 'ticket' ? 'column' : 'ticket'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Drag Mode: {dragMode === 'ticket' ? 'Tickets' : 'Columns'}</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setIsHelpModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Help</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setIsAboutModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">About</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Log Out</a>
+                </div>
+            )}
             
-            <TicketDetailModal ticket={selectedTicket} onClose={handleCloseModals} onEdit={handleOpenEditModal} onDelete={handleDeleteTicket} onUpdateTicket={handleUpdateTicket} onAddComment={handleAddCommentToTicket} />
-            <TicketModal isOpen={isTicketModalOpen} onClose={handleCloseModals} onSave={handleSaveTicket} ticket={editingTicket} />
-            <InfoModal title="About Jocco" isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)}>
+            <TicketDetailModal ticket={selectedTicket} onClose={handleCloseModals} onEdit={handleOpenEditModal} onDelete={handleDeleteTicket} onUpdateTicket={handleUpdateTicket} onAddComment={handleAddCommentToTicket} uiTheme={uiTheme} />
+            <TicketModal isOpen={isTicketModalOpen} onClose={handleCloseModals} onSave={handleSaveTicket} ticket={editingTicket} uiTheme={uiTheme} />
+            <InfoModal title="About Jocco" isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} uiTheme={uiTheme}>
                 <p>Jocco is a minimalist, agile issue tracking web app with a simple, highly modular interface, built with love by Jessenth.</p>
                 <p className="mt-2">Visit <a href="http://www.jessenth.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">www.jessenth.com</a> for more info.</p>
             </InfoModal>
-            <InfoModal title="Help" isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)}>
+            <InfoModal title="Help" isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} uiTheme={uiTheme}>
                 <p>Welcome to Jocco! Here’s a quick guide:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                     <li><b>Create Tickets:</b> Click the "+ Create Ticket" button to add a new task.</li>
@@ -779,6 +897,21 @@ function App() {
                     <li><b>Advanced Features:</b> Add links, checklists, and comments inside any ticket. Right-click a link to rename it.</li>
                 </ul>
             </InfoModal>
+            {columnToDelete && (
+                <InfoModal title="Confirm Deletion" isOpen={!!columnToDelete} onClose={() => setColumnToDelete(null)} uiTheme={uiTheme}>
+                    <p>Are you sure you want to delete the column "<strong>{columnToDelete.title}</strong>"?</p>
+                    <p className="mt-2 text-sm text-red-500">This action will also permanently delete all <strong>{columnToDelete.tickets.length}</strong> tickets in this column. This cannot be undone.</p>
+                    <p className="mt-4">To confirm, please type the column name below:</p>
+                    <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        className="w-full p-2 mt-1 text-black bg-gray-100 border border-gray-300 rounded" />
+                    <div className="mt-4 flex justify-end">
+                        <button onClick={confirmDeleteColumn} disabled={deleteConfirmText !== columnToDelete.title}
+                            className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed">
+                            Delete Column & Tickets
+                        </button>
+                    </div>
+                </InfoModal>
+            )}
         </div>
     );
 }
