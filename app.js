@@ -39,6 +39,7 @@ const loadGoogleFonts = () => {
 // A collection of SVG icons used throughout the application for a consistent look and feel.
 const PlusIcon = ({ className = "h-5 w-5" }) => ( <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>);
 const TrashIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /></svg>);
+const ArchiveIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" /><path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" /></svg>);
 const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 2a1 1 0 011 1v1.158a3.985 3.985 0 013.707 4.565l.5 1.5a.5.5 0 00.94-.31l.5-1.5a3.985 3.985 0 013.707-4.565V3a1 1 0 112 0v1.158a5.985 5.985 0 01-5.56 6.818l-.5 1.5a.5.5 0 00.94.31l.5-1.5a5.985 5.985 0 015.56-6.818V3a1 1 0 112 0v1.158a3.985 3.985 0 013.707 4.565l.5 1.5a.5.5 0 00.94-.31l.5-1.5a3.985 3.985 0 013.707-4.565V3a1 1 0 112 0v1.158a5.985 5.985 0 01-5.56 6.818l-.5 1.5a.5.5 0 00.94.31l.5-1.5a5.985 5.985 0 015.56-6.818zM5 2a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" /></svg>);
 const UserIcon = ({ name }) => { const i=name?name[0].toUpperCase():'?'; const c=['bg-red-500','bg-blue-500','bg-green-500','bg-yellow-500','bg-purple-500','bg-pink-500'][i.charCodeAt(0)%6]; return <div className={`w-8 h-8 rounded-full ${c} flex items-center justify-center text-white font-bold text-sm`}>{i}</div>; };
 const SunIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>);
@@ -64,7 +65,6 @@ const EasterEggModal = ({ isOpen, onClose }) => {
     );
 };
 
-
 /**
  * A generic modal component for displaying information like "About" or "Help".
  * It adapts its appearance based on the selected UI theme.
@@ -81,7 +81,7 @@ const InfoModal = ({ title, children, isOpen, onClose, uiTheme }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className={`${modalClass} rounded-none shadow-xl w-full max-w-lg p-6 relative ${textColorClass}`}>
+            <div className={`${modalClass} rounded-lg shadow-xl w-full max-w-lg p-6 relative ${textColorClass}`}>
                 <h2 className="text-2xl font-bold mb-4">{title}</h2>
                 <div className="prose dark:prose-invert max-w-none text-sm">{children}</div>
                 <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">
@@ -91,6 +91,65 @@ const InfoModal = ({ title, children, isOpen, onClose, uiTheme }) => {
         </div>
     );
 };
+
+/**
+ * Modal for managing archived tickets. Allows restoring or permanent deletion.
+ */
+const ArchiveModal = ({ isOpen, onClose, uiTheme, onRestore, onPermanentDelete }) => {
+    const [archivedTickets, setArchivedTickets] = useState([]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const q = query(collection(db, `artifacts/${appId}/public/data/tickets`), where("isArchived", "==", true));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setArchivedTickets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        return () => unsubscribe();
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    const modalClass = {
+        classic: 'bg-white dark:bg-gray-800',
+        glass: 'bg-white/10 dark:bg-gray-800/10 backdrop-blur-xl border border-white/20',
+        bento: 'bg-white dark:bg-gray-900 border-2 border-black dark:border-white'
+    }[uiTheme];
+    const textColorClass = uiTheme === 'glass' ? 'text-white' : 'text-gray-800 dark:text-gray-200';
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className={`${modalClass} rounded-lg shadow-xl w-full max-w-3xl p-6 relative ${textColorClass}`}>
+                <h2 className="text-2xl font-bold mb-4">Archived Tickets</h2>
+                <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div className="max-h-[60vh] overflow-y-auto">
+                    {archivedTickets.length > 0 ? (
+                        <ul className="space-y-3">
+                            {archivedTickets.map(ticket => (
+                                <li key={ticket.id} className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-md">
+                                    <div>
+                                        <p className="font-semibold text-gray-800 dark:text-gray-100">{ticket.title}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{ticket.ticketId}</p>
+                                    </div>
+                                    <div className="flex space-x-2">
+                                        <button onClick={() => onRestore(ticket.id)} className="bg-green-500 text-white font-bold py-1 px-3 rounded-lg text-sm hover:bg-green-600">Restore</button>
+                                        <button onClick={() => onPermanentDelete(ticket.id)} className="bg-red-600 text-white font-bold py-1 px-3 rounded-lg text-sm hover:bg-red-700">Delete Permanently</button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-center text-gray-500 dark:text-gray-400 py-8">No archived tickets.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 /**
  * Modal for creating and editing tickets. Includes AI-powered description generation.
@@ -125,7 +184,17 @@ const TicketModal = ({ isOpen, onClose, onSave, ticket, uiTheme }) => {
     const handleGenerateDescription = async () => {
         if (!formData.title.trim()) return;
         setIsGenerating(true);
-        const prompt = `Generate a professional and concise ticket description for a software development task titled "${formData.title}". The output must be only the description text. Do not include the title, headings, or any introductory phrases.`;
+        const prompt = `
+As a product manager, write a detailed and professional ticket description for a software development task.
+
+**Ticket Title:** "${formData.title}"
+
+Based on the title, generate a description that includes:
+1.  A clear user story or objective.
+2.  A list of specific acceptance criteria (what needs to be done for the ticket to be considered complete).
+
+The output must be only the description text, formatted professionally with markdown. Do not include the title "Description:", any other headings, or introductory phrases like "Here is the description".
+`;
         try {
             const apiKey = ""; // API key is handled by the environment
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
@@ -480,7 +549,7 @@ const TicketDetailModal = ({ ticket, onClose, onEdit, onDelete, onUpdateTicket, 
                 </div>
 
                 <div className="flex items-center justify-end space-x-3 mt-6">
-                    <button onClick={() => onDelete(liveTicket.id)} className="text-red-600 hover:text-red-800 font-bold py-2 px-4 rounded-lg flex items-center"><TrashIcon /><span className="ml-1">Delete</span></button>
+                    <button onClick={() => onDelete(liveTicket.id)} className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white font-bold py-2 px-4 rounded-lg flex items-center"><ArchiveIcon /><span className="ml-1">Archive</span></button>
                     <button onClick={() => onEdit(liveTicket)} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Edit</button>
                 </div>
             </div>
@@ -506,6 +575,7 @@ function App() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+    const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [dragMode, setDragMode] = useState('ticket');
@@ -622,7 +692,8 @@ function App() {
             setSearchResults([]);
             return;
         }
-        const filtered = tickets.filter(ticket => 
+        const activeTickets = tickets.filter(t => !t.isArchived);
+        const filtered = activeTickets.filter(ticket => 
             ticket.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             ticket.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             ticket.ticketId?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -639,6 +710,24 @@ function App() {
             setIsEasterEggOpen(true);
             setLogoClickCount(0); // Reset counter after showing the modal
         }
+    };
+
+    const handleRestoreTicket = async (ticketId) => {
+        const firstColumn = columns[0];
+        if (!firstColumn) {
+            console.error("No columns available to restore to.");
+            // Here you might want to show a user-facing error
+            return;
+        }
+        const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
+        await updateDoc(ticketRef, { 
+            isArchived: false,
+            status: firstColumn.title
+        });
+    };
+
+    const handlePermanentDeleteTicket = async (ticketId) => {
+        await deleteDoc(doc(db, `artifacts/${appId}/public/data/tickets`, ticketId));
     };
 
     const handleUpdateTicket = async (ticketId, updateData) => {
@@ -673,6 +762,7 @@ function App() {
             status: columns[0]?.title || 'To Do',
             accentColor: generateRandomVibrantColor(),
             ticketId: '...', // Placeholder until transaction completes
+            isArchived: false,
         };
         setTickets(prev => [...prev, optimisticTicket]);
         handleCloseModals();
@@ -696,7 +786,8 @@ function App() {
                     ticketId,
                     status: columns[0]?.title || 'To Do', 
                     createdAt: serverTimestamp(),
-                    accentColor: optimisticTicket.accentColor
+                    accentColor: optimisticTicket.accentColor,
+                    isArchived: false
                 });
                 transaction.set(counterRef, { count: newCount });
             });
@@ -709,7 +800,8 @@ function App() {
     
     const handleDeleteTicket = async (ticketId) => {
         if (!ticketId) return;
-        await deleteDoc(doc(db, `artifacts/${appId}/public/data/tickets`, ticketId));
+        const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
+        await updateDoc(ticketRef, { isArchived: true });
         setSelectedTicket(null); // Close the detail modal
     };
     
@@ -728,10 +820,10 @@ function App() {
         if (!columnToDelete) return;
         const batch = writeBatch(db);
         
-        // Delete all tickets within the column
+        // Archive all tickets in the column
         columnToDelete.tickets.forEach(ticket => {
             const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticket.id);
-            batch.delete(ticketRef);
+            batch.update(ticketRef, { isArchived: true });
         });
 
         // Delete the column itself
@@ -918,7 +1010,7 @@ function App() {
                     {isLoading || !isAuthReady ? <div className="flex justify-center items-center h-full text-lg text-gray-500 dark:text-gray-400">Loading Board...</div> : (
                         <div className="flex h-full">
                             {columns.map((column, index) => (
-                                <Column key={column.id} column={column} tickets={tickets.filter(t => t.status === column.title)}
+                                <Column key={column.id} column={column} tickets={tickets.filter(t => !t.isArchived && t.status === column.title)}
                                     onTicketDrop={onTicketDrop}
                                     onSelectTicket={setSelectedTicket} onDragStart={(e, id) => e.dataTransfer.setData('ticketId', id)}
                                     onTitleChange={handleColumnTitleChange}
@@ -950,6 +1042,7 @@ function App() {
                     <a href="#" onClick={(e) => { e.preventDefault(); setUiTheme('glass'); }} className={`block px-4 py-2 text-sm ${uiTheme === 'glass' ? 'font-bold' : ''} text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700`}>Glass</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setUiTheme('bento'); }} className={`block px-4 py-2 text-sm ${uiTheme === 'bento' ? 'font-bold' : ''} text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700`}>Bento</a>
                     <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setIsArchiveModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Archive</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setDragMode(prev => prev === 'ticket' ? 'column' : 'ticket'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Drag Mode: {dragMode === 'ticket' ? 'Tickets' : 'Columns'}</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setIsHelpModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">Help</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setIsAboutModalOpen(true); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">About</a>
@@ -977,22 +1070,28 @@ function App() {
             {columnToDelete && (
                 <InfoModal title="Confirm Deletion" isOpen={!!columnToDelete} onClose={() => setColumnToDelete(null)} uiTheme={uiTheme}>
                     <p>Are you sure you want to delete the column "<strong>{columnToDelete.title}</strong>"?</p>
-                    <p className="mt-2 text-sm text-red-500">This action will also permanently delete all <strong>{columnToDelete.tickets.length}</strong> tickets in this column. This cannot be undone.</p>
+                    <p className="mt-2 text-sm text-red-500">This action will also archive all <strong>{columnToDelete.tickets.length}</strong> tickets in this column.</p>
                     <p className="mt-4">To confirm, please type the column name below:</p>
                     <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)}
                         className="w-full p-2 mt-1 text-black bg-gray-100 border border-gray-300 rounded" />
                     <div className="mt-4 flex justify-end">
                         <button onClick={confirmDeleteColumn} disabled={deleteConfirmText !== columnToDelete.title}
                             className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed">
-                            Delete Column & Tickets
+                            Delete Column & Archive Tickets
                         </button>
                     </div>
                 </InfoModal>
             )}
             <EasterEggModal isOpen={isEasterEggOpen} onClose={() => setIsEasterEggOpen(false)} />
+            <ArchiveModal 
+                isOpen={isArchiveModalOpen} 
+                onClose={() => setIsArchiveModalOpen(false)} 
+                uiTheme={uiTheme} 
+                onRestore={handleRestoreTicket}
+                onPermanentDelete={handlePermanentDeleteTicket}
+            />
         </div>
     );
 }
 
 export default App;
-
