@@ -1,70 +1,65 @@
-# Getting Started with Create React App
+# Jocco
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A minimalist, themeable Kanban board with AI-assisted ticket authoring. No backend, no accounts - everything lives in your browser.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### Board
+- Drag-and-drop tickets between columns to update status
+- Switch to **column drag mode** to reorder the board itself
+- Up to 7 columns - add, rename, recolor, or delete with safety confirmation
+- Board name auto-generates ticket ID prefixes (e.g. "My Board" → `MB-001`)
+- Live search across ticket title, description, and ID
 
-### `npm start`
+### Tickets
+- **Markdown descriptions** rendered inline
+- **AI description generation** - give it a title, get a full user story + acceptance criteria
+- Checklists with a live progress bar
+- Links (right-click a link to rename it)
+- Comments with timestamps
+- Assignee, priority, story points, start/end dates, vibrant accent color
+- Archive instead of delete - restore anytime from the Archive view
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Themes
+Seven distinct visual modes, switchable at runtime:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Theme | Vibe |
+|---|---|
+| **Classic** | Clean, neutral - light/dark mode supported |
+| **Bento** | Bold borders, high contrast - light/dark mode supported |
+| **Glass** | Frosted blur with floating animated shapes |
+| **Terminal** | Green-on-black monospace hacker aesthetic |
+| **Warm** | Soft amber tones, rounded corners |
+| **Ocean** | Deep navy + cyan glow |
+| **Brutalist** | Thick black borders, yellow accents, shadow offsets |
 
-### `npm test`
+### AI Integration
+Optional - enable in **Menu → AI Settings**. Supports:
+- **Lava** (DeepSeek Chat) - routed through a dev proxy to avoid CORS
+- **OpenAI** (GPT-4o mini)
+- **Anthropic** (Claude Haiku)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+API keys are stored in `localStorage` only. Nothing is sent anywhere other than the chosen AI provider.
 
-### `npm run build`
+## Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **React 19** + Create React App
+- **TailwindCSS 3**
+- **react-markdown** for ticket description rendering
+- **localStorage** for all persistence (no backend)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Running Locally
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd jocco-app
+npm install
+npm start
+```
 
-### `npm run eject`
+Opens at `http://localhost:3000`.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Notes
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- The Lava API proxy is configured in `src/setupProxy.js` - required in dev to avoid CORS on Lava requests. In production, configure a reverse proxy or switch to OpenAI/Anthropic which support direct browser calls.
+- Firebase is listed as a dependency but is not currently wired up.
+- Click the Jocco logo 5 times for a surprise.
